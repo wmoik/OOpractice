@@ -117,6 +117,8 @@ var Engine = (function(global) {
             player.rowNum = 2;
             player.colNum = 3;
             player.numLives--;
+            materials.x = 400;
+            materials.y = 400;
 
             allEnemies.forEach(function(enemy) {
                 enemy.y -= 83*player.mapPos;
@@ -153,6 +155,7 @@ var Engine = (function(global) {
         blocks.render();
         ctx.drawImage(Resources.get('images/Heart.png'),50,540, 25, 50);
         ctx.fillText(" = " + player.numLives, 70, 575, 50, 50);
+        ctx.fillText("Level = " + player.level, 110, 575, 50, 50);
         renderEntities();
     }
 
@@ -169,6 +172,7 @@ var Engine = (function(global) {
         });
 
         player.render();
+        materials.render();
     }
 
 
@@ -191,7 +195,8 @@ var Engine = (function(global) {
         'images/grass-block.png',
         'images/enemy-bug.png',
         'images/char-boy.png',
-        'images/Heart.png'
+        'images/Heart.png',
+        'images/Rock.png'
     ]);
     Resources.onReady(init);
 

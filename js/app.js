@@ -51,6 +51,8 @@ backgroundBlocks.prototype.update = function() {
         player.y += 83;
         //player.mapPos keep tracks of how many maps movements were made vertically. Needed to keep track of which background blocks to show
         player.mapPos++;
+        // shift all materials with background
+        materials.y += 83;
         //check if the top layer has yet to be created, if not then create it
         if (player.rowNum > this.imgBracket.length - player.maxDistToTop){
             this.imgBracket.unshift(['images/water-block.png', 'images/water-block.png', 'images/water-block.png', 'images/water-block.png', 'images/water-block.png']);
@@ -61,6 +63,7 @@ backgroundBlocks.prototype.update = function() {
       }
       if ((player.rowNum - player.mapPos < 3) && (player.rowNum > 2)) {
         player.y -= 83;
+        materials.y -= 83;
         player.mapPos--;
         allEnemies.forEach(function(enemy) {
             enemy.y -= 83;
@@ -95,10 +98,25 @@ Enemy.prototype.update = function(dt) {
     }
 };
 
+
 // Draw the enemy on the screen, required method for game
 Enemy.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
+
+// Materials/Objects placed on the field that are not considered background
+var Materials = function() {
+  this.x = 400;
+  this.y = 400;
+
+  this.sprite = 'images/Rock.png';
+}
+
+Materials.prototype.render = function() {
+  ctx.drawImage(Resources.get(this.sprite),this.x,this.y);
+}
+
+
 
 // Now write your own player class
 // This class requires an update(), render() and
@@ -113,7 +131,7 @@ var Player = function() {
     this.numLives = 3;
     this.level = 1;
     this.movableCamera = false;
-    this.holdBlock = true;
+    this.holdBlock = false;
     this.holdBlockType = 'images/stone-block.png';
     this.maxDistToBot = 4;
     this.maxDistToTop = 3;
@@ -143,7 +161,7 @@ Player.prototype.levelUp = function() {
     this.level++;
     this.numLives++;
     if (this.level === 4) {
-        this.holdblock = true;
+        //this.holdblock = true;
         this.movableCamera = true;
     }
 }
@@ -152,8 +170,17 @@ Player.prototype.build = function() {
   //Check if the player is holding a block and if (s)he is just below a water tile
     if ((this.holdBlock) && (blocks.imgBracket[blocks.imgBracket.length-this.rowNum-1][this.colNum-1] === 'images/water-block.png') ) {
       blocks.imgBracket[blocks.imgBracket.length-this.rowNum-1][this.colNum-1] = this.holdBlockType;
-      //this.holdBlock = false;
+      this.holdBlock = false; // Remove block from player
       this.movableCamera = true;
+    }
+}
+Player.prototype.collect = function() {
+  //Check if material is close by
+    if ( Math.abs(materials.x - player.x)<200 || Math.abs(materials.y - player.y)<200 ) {
+      if (materials.sprite == "images/Rock.png") {
+        this.holdBlockType = 'images/stone-block.png'
+        this.holdBlock = true; // Add block to player
+      }
     }
 }
 
@@ -176,6 +203,7 @@ Player.prototype.handleInput = function(inputDirection) {
       this.speedy = 83;
     } else if (inputDirection === 'space') {
       player.build();
+      player.collect();
     }
 
     // Separate if tree for clarity
@@ -215,6 +243,7 @@ var allEnemies = [
 ];
 var player = new Player;
 var blocks = new backgroundBlocks;
+var materials = new Materials; // Later will be expanded to be many different materials
 
 //Set level and lives
 var level = 1;
